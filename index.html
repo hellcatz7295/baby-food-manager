@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baby Food Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-amber-50 text-stone-800">
+  <div id="app" class="min-h-screen p-4 max-w-md mx-auto space-y-4">
+    <section class="bg-white rounded-3xl p-5 shadow">
+      <p class="text-sm text-stone-500">우리 아기 맞춤 설정</p>
+      <h1 id="title" class="text-2xl font-black mt-1">재하 베이비푸드 매니저</h1>
+      <p id="dday" class="text-sm text-stone-500">D+ 계산중</p>
+
+      <div class="grid grid-cols-2 gap-2 mt-4">
+        <input id="babyName" class="bg-stone-100 rounded-2xl px-3 py-2 text-sm" value="재하" placeholder="아기 이름" />
+        <input id="birthDate" class="bg-stone-100 rounded-2xl px-3 py-2 text-sm" type="date" value="2025-05-12" />
+      </div>
+    </section>
+
+    <section class="bg-white rounded-3xl p-5 shadow">
+      <h2 class="text-lg font-bold">냉동 재고 추가</h2>
+      <p class="text-xs text-stone-500 mb-3">닭고기→단백질, 근대→잎채소 자동분류</p>
+
+      <input id="foodName" class="w-full bg-stone-100 rounded-2xl px-3 py-2 text-sm mb-2" placeholder="예: 닭고기 큐브" />
+      <div class="flex gap-2">
+        <input id="cubeCount" class="w-24 bg-stone-100 rounded-2xl px-3 py-2 text-sm" type="number" value="6" />
+        <button onclick="addFood()" class="flex-1 bg-stone-900 text-white rounded-2xl font-bold">추가</button>
+      </div>
+    </section>
+
+    <section id="oldAlert" class="bg-amber-100 border border-amber-200 rounded-3xl p-4 text-sm"></section>
+
+    <section class="bg-white rounded-3xl p-5 shadow">
+      <h2 class="text-lg font-bold mb-3">냉동 재고</h2>
+      <div id="foodList" class="space-y-2"></div>
+    </section>
+
+    <section class="bg-white rounded-3xl p-5 shadow">
+      <h2 class="text-lg font-bold">오늘 먹은 거 기록</h2>
+      <div class="flex gap-2 mt-3">
+        <input id="mealInput" class="flex-1 bg-stone-100 rounded-2xl px-3 py-2 text-sm" placeholder="예: 아침 단호박 카레" />
+        <button onclick="addMeal()" class="bg-stone-900 text-white rounded-2xl px-4 font-bold">기록</button>
+      </div>
+      <div id="mealLog" class="space-y-2 mt-3"></div>
+    </section>
+
+    <section class="bg-white rounded-3xl p-5 shadow">
+      <h2 class="text-lg font-bold">오늘 뭐먹이지?</h2>
+      <p class="text-xs text-stone-500 mb-3">집에 있는 재료를 쉼표로 적어줘</p>
+      <textarea id="ingredients" class="w-full min-h-20 bg-stone-100 rounded-2xl p-3 text-sm">근대, 양송이, 단호박, 토마토, 게살, 닭고기</textarea>
+      <button onclick="recommend()" class="w-full bg-emerald-600 text-white rounded-2xl py-2 mt-2 font-bold">추천받기</button>
+      <div id="recommendList" class="space-y-2 mt-3"></div>
+    </section>
+  </div>
+
+  <script>
+    const rules = {
+      "단백질": ["닭고기","소고기","돼지고기","연어","대구","게살","새우","두부","계란","완두콩"],
+      "잎채소": ["근대","시금치","청경채","얼갈이","로메인","브로콜리","숙주"],
+      "뿌리채소": ["감자","고구마","당근","무","비트","양파"],
+      "열매채소": ["애호박","단호박","토마토","가지","파프리카"],
+      "과일/간식": ["바나나","배","사과","망고","밤","치즈","요거트","우유"]
+    };
+
+    let foods = JSON.parse(localStorage.getItem("foods")) || [
+      { name:"게살 숙주 닭고기 볶음", category:"완성반찬", cubes:5, date:"2026-05-14" },
+      { name:"근대 양송이 볶음", category:"완성반찬", cubes:8, date:"2026-05-15" },
+      { name:"단호박 토마토 카레", category:"완성반찬", cubes:7, date:"2026-05-17" }
+    ];
+
+    let meals = JSON.parse(localStorage.getItem("meals")) || ["아침: 단호박 토마토 카레"];
+
+    function save() {
+      localStorage.setItem("foods", JSON.stringify(foods));
+      localStorage.setItem("meals", JSON.stringify(meals));
+    }
+
+    function guessCategory(name) {
+      for (const category in rules) {
+        if (rules[category].some(word => name.includes(word))) return category;
+      }
+      return "미분류";
+    }
+
+    function days(date) {
+      const a = new Date(date);
+      const b = new Date();
+      a.setHours(0,0,0,0);
+      b.setHours(0,0,0,0);
+      return Math.floor((b - a) / 86400000);
+    }
+
+    function updateBaby() {
+      const name = document.getElementById("babyName").value || "아기";
+      const birth = document.getElementById("birthDate").value;
+      document.getElementById("title").innerText = name + " 베이비푸드 매니저";
+      if (birth) document.getElementById("dday").innerText = "D+" + (days(birth) + 1);
+    }
+
+    function render() {
+      updateBaby();
+
+      const list = document.getElementById("foodList");
+      list.innerHTML = "";
+
+      foods.forEach((food, i) => {
+        list.innerHTML += `
+          <div class="bg-stone-50 rounded-3xl p-3">
+            <p class="text-xs text-stone-500">${food.category} · 냉동 ${days(food.date)}일째</p>
+            <div class="flex justify-between items-center">
+              <b>${food.name}</b>
+              <div class="flex items-center gap-2">
+                <button onclick="changeCube(${i}, -1)" class="w-8 h-8 bg-stone-200 rounded-full">−</button>
+                <b>${food.cubes}</b>
+                <button onclick="changeCube(${i}, 1)" class="w-8 h-8 bg-stone-200 rounded-full">+</button>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      const oldest = [...foods].sort((a,b) => days(b.date) - days(a.date))[0];
+      document.getElementById("oldAlert").innerHTML = oldest
+        ? `⏰ 먼저 먹이기 추천: <b>${oldest.name}</b> · 냉동 ${days(oldest.date)}일째`
+        : "아직 냉동 재고가 없어요.";
+
+      const mealBox = document.getElementById("mealLog");
+      mealBox.innerHTML = meals.map(m => `<div class="bg-stone-50 rounded-2xl p-3 text-sm">${m}</div>`).join("");
+
+      save();
+    }
+
+    function addFood() {
+      const name = document.getElementById("foodName").value.trim();
+      const cubes = Number(document.getElementById("cubeCount").value || 1);
+      if (!name) return;
+      foods.unshift({
+        name,
+        category: guessCategory(name),
+        cubes,
+        date: new Date().toISOString().slice(0,10)
+      });
+      document.getElementById("foodName").value = "";
+      render();
+    }
+
+    function changeCube(i, amount) {
+      foods[i].cubes = Math.max(0, foods[i].cubes + amount);
+      render();
+    }
+
+    function addMeal() {
+      const meal = document.getElementById("mealInput").value.trim();
+      if (!meal) return;
+      meals.unshift(meal);
+      document.getElementById("mealInput").value = "";
+      render();
+    }
+
+    function recommend() {
+      const txt = document.getElementById("ingredients").value;
+      const recs = [];
+
+      if (txt.includes("근대") && txt.includes("양송이")) recs.push("근대 + 양송이 → 근대 양송이 볶음");
+      if (txt.includes("단호박") && txt.includes("토마토")) recs.push("단호박 + 토마토 → 단호박 토마토 카레");
+      if (txt.includes("게살") && txt.includes("닭고기")) recs.push("게살 + 닭고기 → 게살 닭고기 볶음");
+      if (txt.includes("브로콜리") && txt.includes("치즈")) recs.push("브로콜리 + 치즈 → 브로콜리 치즈볼");
+
+      if (!recs.length) recs.push("아직 추천 조합이 없어! 재료를 더 적어줘.");
+
+      document.getElementById("recommendList").innerHTML =
+        recs.map(r => `<div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 text-sm">✨ ${r}</div>`).join("");
+    }
+
+    document.getElementById("babyName").addEventListener("input", updateBaby);
+    document.getElementById("birthDate").addEventListener("change", updateBaby);
+
+    render();
+    recommend();
+  </script>
+</body>
+</html>
