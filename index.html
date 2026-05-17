@@ -148,6 +148,10 @@
 
     function changeCube(i, amount) {
       foods[i].cubes = Math.max(0, foods[i].cubes + amount);
+
+if (foods[i].cubes === 0) {
+  foods.splice(i, 1);
+}
       render();
     }
 
