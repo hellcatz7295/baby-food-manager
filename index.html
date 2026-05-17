@@ -1,188 +1,424 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="icon" type="image/png" href="food.png">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Baby Food Manager</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-amber-50 text-stone-800">
-  <div id="app" class="min-h-screen p-4 max-w-md mx-auto space-y-4">
-    <section class="bg-white rounded-3xl p-5 shadow">
-      <p class="text-sm text-stone-500">우리 아기 맞춤 설정</p>
-      <h1 id="title" class="text-2xl font-black mt-1">재하 베이비푸드 매니저</h1>
-      <p id="dday" class="text-sm text-stone-500">D+ 계산중</p>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Food Manager</title>
 
-      <div class="grid grid-cols-2 gap-2 mt-4">
-        <input id="babyName" class="bg-stone-100 rounded-2xl px-3 py-2 text-sm" value="재하" placeholder="아기 이름" />
-        <input id="birthDate" class="bg-stone-100 rounded-2xl px-3 py-2 text-sm" type="date" value="2025-05-12" />
-      </div>
-    </section>
-
-    <section class="bg-white rounded-3xl p-5 shadow">
-      <h2 class="text-lg font-bold">냉동 재고 추가</h2>
-      <p class="text-xs text-stone-500 mb-3">닭고기→단백질, 근대→잎채소 자동분류</p>
-
-      <input id="foodName" class="w-full bg-stone-100 rounded-2xl px-3 py-2 text-sm mb-2" placeholder="예: 닭고기 큐브" />
-      <div class="flex gap-2">
-        <input id="cubeCount" class="w-24 bg-stone-100 rounded-2xl px-3 py-2 text-sm" type="number" value="6" />
-        <button onclick="addFood()" class="flex-1 bg-stone-900 text-white rounded-2xl font-bold">추가</button>
-      </div>
-    </section>
-
-    <section id="oldAlert" class="bg-amber-100 border border-amber-200 rounded-3xl p-4 text-sm"></section>
-
-    <section class="bg-white rounded-3xl p-5 shadow">
-      <h2 class="text-lg font-bold mb-3">냉동 재고</h2>
-      <div id="foodList" class="space-y-2"></div>
-    </section>
-
-    <section class="bg-white rounded-3xl p-5 shadow">
-      <h2 class="text-lg font-bold">오늘 먹은 거 기록</h2>
-      <div class="flex gap-2 mt-3">
-        <input id="mealInput" class="flex-1 bg-stone-100 rounded-2xl px-3 py-2 text-sm" placeholder="예: 아침 단호박 카레" />
-        <button onclick="addMeal()" class="bg-stone-900 text-white rounded-2xl px-4 font-bold">기록</button>
-      </div>
-      <div id="mealLog" class="space-y-2 mt-3"></div>
-    </section>
-
-    <section class="bg-white rounded-3xl p-5 shadow">
-      <h2 class="text-lg font-bold">오늘 뭐먹이지?</h2>
-      <p class="text-xs text-stone-500 mb-3">집에 있는 재료를 쉼표로 적어줘</p>
-      <textarea id="ingredients" class="w-full min-h-20 bg-stone-100 rounded-2xl p-3 text-sm">근대, 양송이, 단호박, 토마토, 게살, 닭고기</textarea>
-      <button onclick="recommend()" class="w-full bg-emerald-600 text-white rounded-2xl py-2 mt-2 font-bold">추천받기</button>
-      <div id="recommendList" class="space-y-2 mt-3"></div>
-    </section>
-  </div>
-
-  <script>
-    const rules = {
-      "단백질": ["닭고기","소고기","돼지고기","연어","대구","게살","새우","두부","계란","완두콩"],
-      "잎채소": ["근대","시금치","청경채","얼갈이","로메인","브로콜리","숙주"],
-      "뿌리채소": ["감자","고구마","당근","무","비트","양파"],
-      "열매채소": ["애호박","단호박","토마토","가지","파프리카"],
-      "과일/간식": ["바나나","배","사과","망고","밤","치즈","요거트","우유"]
-    };
-
-    let foods = JSON.parse(localStorage.getItem("foods")) || [
-      { name:"게살 숙주 닭고기 볶음", category:"완성반찬", cubes:5, date:"2026-05-14" },
-      { name:"근대 양송이 볶음", category:"완성반찬", cubes:8, date:"2026-05-15" },
-      { name:"단호박 토마토 카레", category:"완성반찬", cubes:7, date:"2026-05-17" }
-    ];
-
-    let meals = JSON.parse(localStorage.getItem("meals")) || ["아침: 단호박 토마토 카레"];
-
-    function save() {
-      localStorage.setItem("foods", JSON.stringify(foods));
-      localStorage.setItem("meals", JSON.stringify(meals));
-    }
-
-    function guessCategory(name) {
-      for (const category in rules) {
-        if (rules[category].some(word => name.includes(word))) return category;
-      }
-      return "미분류";
-    }
-
-    function days(date) {
-      const a = new Date(date);
-      const b = new Date();
-      a.setHours(0,0,0,0);
-      b.setHours(0,0,0,0);
-      return Math.floor((b - a) / 86400000);
-    }
-
-    function updateBaby() {
-      const name = document.getElementById("babyName").value || "아기";
-      const birth = document.getElementById("birthDate").value;
-      document.getElementById("title").innerText = name + " 베이비푸드 매니저";
-      if (birth) document.getElementById("dday").innerText = "D+" + (days(birth) + 1);
-    }
-
-    function render() {
-      updateBaby();
-
-      const list = document.getElementById("foodList");
-      list.innerHTML = "";
-
-      foods.forEach((food, i) => {
-        list.innerHTML += `
-          <div class="bg-stone-50 rounded-3xl p-3">
-            <p class="text-xs text-stone-500">${food.category} · 냉동 ${days(food.date)}일째</p>
-            <div class="flex justify-between items-center">
-              <b>${food.name}</b>
-              <div class="flex items-center gap-2">
-                <button onclick="changeCube(${i}, -1)" class="w-8 h-8 bg-stone-200 rounded-full">−</button>
-                <b>${food.cubes}</b>
-                <button onclick="changeCube(${i}, 1)" class="w-8 h-8 bg-stone-200 rounded-full">+</button>
-              </div>
-            </div>
-          </div>`;
-      });
-
-      const oldest = [...foods].sort((a,b) => days(b.date) - days(a.date))[0];
-      document.getElementById("oldAlert").innerHTML = oldest
-        ? `⏰ 먼저 먹이기 추천: <b>${oldest.name}</b> · 냉동 ${days(oldest.date)}일째`
-        : "아직 냉동 재고가 없어요.";
-
-      const mealBox = document.getElementById("mealLog");
-      mealBox.innerHTML = meals.map(m => `<div class="bg-stone-50 rounded-2xl p-3 text-sm">${m}</div>`).join("");
-
-      save();
-    }
-
-    function addFood() {
-      const name = document.getElementById("foodName").value.trim();
-      const cubes = Number(document.getElementById("cubeCount").value || 1);
-      if (!name) return;
-      foods.unshift({
-        name,
-        category: guessCategory(name),
-        cubes,
-        date: new Date().toISOString().slice(0,10)
-      });
-      document.getElementById("foodName").value = "";
-      render();
-    }
-
-    function changeCube(i, amount) {
-      foods[i].cubes = Math.max(0, foods[i].cubes + amount);
-
-if (foods[i].cubes === 0) {
-  foods.splice(i, 1);
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+background:linear-gradient(#ecf8ff,#fff);
+color:#333;
 }
-      render();
-    }
+.app{
+max-width:480px;
+margin:0 auto;
+padding:16px 16px 100px;
+}
+.card{
+background:#fff;
+border-radius:28px;
+padding:18px;
+box-shadow:0 8px 24px rgba(30,100,150,.08);
+margin-bottom:12px;
+}
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+.logo{
+width:54px;
+height:54px;
+border-radius:22px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+background:linear-gradient(135deg,#dff4ff,#dbeafe);
+}
+.brand{
+display:flex;
+gap:12px;
+align-items:center;
+}
+h1{
+margin:0;
+font-size:22px;
+}
+.muted{
+font-size:13px;
+color:#8a96a3;
+}
+.dday{
+background:#e0f2fe;
+padding:12px;
+border-radius:18px;
+font-weight:800;
+color:#0369a1;
+font-size:13px;
+}
+.tabs{
+display:flex;
+gap:8px;
+overflow:auto;
+padding:8px 0 16px;
+}
+.tab{
+border:0;
+background:#fff;
+padding:10px 15px;
+border-radius:16px;
+font-weight:800;
+white-space:nowrap;
+box-shadow:0 4px 14px rgba(0,0,0,.06);
+}
+.active{
+background:#38bdf8;
+color:#fff;
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+margin-top:14px;
+}
+.num{
+font-size:24px;
+font-weight:900;
+margin-top:6px;
+}
+.item{
+background:#fff;
+padding:16px;
+border-radius:24px;
+box-shadow:0 8px 20px rgba(0,0,0,.06);
+margin-bottom:12px;
+}
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+.title{
+font-size:18px;
+font-weight:900;
+}
+.info{
+margin-top:12px;
+padding:12px;
+border-radius:18px;
+background:#f0f9ff;
+}
+.btn{
+border:0;
+padding:10px 14px;
+border-radius:16px;
+font-weight:800;
+}
+.blue{
+background:#38bdf8;
+color:#fff;
+}
+.red{
+background:#fb7185;
+color:#fff;
+}
+input,select,textarea{
+width:100%;
+padding:14px;
+border-radius:18px;
+border:1px solid #dbeafe;
+margin-bottom:10px;
+font-size:16px;
+}
+textarea{
+min-height:90px;
+}
+.float{
+position:fixed;
+right:20px;
+bottom:20px;
+width:68px;
+height:58px;
+border-radius:999px;
+border:0;
+font-size:20px;
+font-weight:900;
+background:linear-gradient(90deg,#38bdf8,#3b82f6);
+color:#fff;
+box-shadow:0 10px 24px rgba(59,130,246,.35);
+}
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+display:none;
+align-items:flex-end;
+}
+.modal.show{
+display:flex;
+}
+.sheet{
+background:#fff;
+width:100%;
+max-width:480px;
+margin:0 auto;
+padding:20px;
+border-radius:32px 32px 0 0;
+}
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:6px;
+}
+.day{
+background:#f0f9ff;
+border-radius:14px;
+padding:8px;
+text-align:center;
+font-size:12px;
+}
+.bar{
+height:12px;
+background:#e0f2fe;
+border-radius:999px;
+overflow:hidden;
+margin-top:8px;
+}
+.bar span{
+display:block;
+height:100%;
+background:linear-gradient(90deg,#38bdf8,#3b82f6);
+}
+</style>
+</head>
 
-    function addMeal() {
-      const meal = document.getElementById("mealInput").value.trim();
-      if (!meal) return;
-      meals.unshift(meal);
-      document.getElementById("mealInput").value = "";
-      render();
-    }
+<body>
 
-    function recommend() {
-      const txt = document.getElementById("ingredients").value;
-      const recs = [];
+<div class="app">
 
-      if (txt.includes("근대") && txt.includes("양송이")) recs.push("근대 + 양송이 → 근대 양송이 볶음");
-      if (txt.includes("단호박") && txt.includes("토마토")) recs.push("단호박 + 토마토 → 단호박 토마토 카레");
-      if (txt.includes("게살") && txt.includes("닭고기")) recs.push("게살 + 닭고기 → 게살 닭고기 볶음");
-      if (txt.includes("브로콜리") && txt.includes("치즈")) recs.push("브로콜리 + 치즈 → 브로콜리 치즈볼");
+<div class="card header">
+<div class="brand">
+<div class="logo">🍼</div>
+<div>
+<h1>Baby Food Manager</h1>
+<div class="muted" id="today"></div>
+</div>
+</div>
 
-      if (!recs.length) recs.push("아직 추천 조합이 없어! 재료를 더 적어줘.");
+<div class="dday" id="dday"></div>
+</div>
 
-      document.getElementById("recommendList").innerHTML =
-        recs.map(r => `<div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 text-sm">✨ ${r}</div>`).join("");
-    }
+<div class="grid">
+<div class="card">
+<div class="muted">전체 재고</div>
+<div class="num" id="countInventory">0</div>
+</div>
 
-    document.getElementById("babyName").addEventListener("input", updateBaby);
-    document.getElementById("birthDate").addEventListener("change", updateBaby);
+<div class="card">
+<div class="muted">오늘 기록</div>
+<div class="num" id="countLogs">0</div>
+</div>
 
-    render();
-    recommend();
-  </script>
+<div class="card">
+<div class="muted">오래된 냉동</div>
+<div class="num" id="countOld">0</div>
+</div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div id="content"></div>
+
+</div>
+
+<button class="float" onclick="openModal()">+ 추가</button>
+
+<div class="modal" id="modal">
+<div class="sheet">
+
+<h2>재고 추가</h2>
+
+<input id="foodName" placeholder="음식 이름">
+
+<select id="foodCategory">
+<option>반찬</option>
+<option>간식</option>
+<option>국</option>
+<option>큐브</option>
+</select>
+
+<input id="foodAmount" type="number" placeholder="수량">
+
+<button class="btn blue" onclick="saveFood()">저장</button>
+
+</div>
+</div>
+
+<script>
+
+const birth = new Date('2025-05-12');
+
+let activeTab='냉동재고';
+
+let inventory = JSON.parse(localStorage.getItem('inventory')||'[]');
+
+const tabs=['냉동재고','식단표','추천음식','기록','통계'];
+
+function save(){
+localStorage.setItem('inventory',JSON.stringify(inventory));
+}
+
+function formatDate(){
+const d=new Date();
+return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function dday(){
+return Math.floor((new Date()-birth)/86400000);
+}
+
+function render(){
+
+save();
+
+document.getElementById('today').innerText=`재하 이유식 관리앱 · ${formatDate()}`;
+document.getElementById('dday').innerText=`재하 D+${dday()}`;
+
+document.getElementById('countInventory').innerText=inventory.length;
+
+document.getElementById('countLogs').innerText=0;
+
+document.getElementById('countOld').innerText=inventory.filter(i=>i.days>=14).length;
+
+document.getElementById('tabs').innerHTML=tabs.map(tab=>`
+<button class="tab ${activeTab===tab?'active':''}" onclick="changeTab('${tab}')">
+${tab}
+</button>
+`).join('');
+
+if(activeTab==='냉동재고'){
+renderInventory();
+}
+
+if(activeTab==='통계'){
+renderStats();
+}
+
+}
+
+function changeTab(tab){
+activeTab=tab;
+render();
+}
+
+function renderInventory(){
+
+document.getElementById('content').innerHTML=inventory.length?inventory.map(item=>`
+<div class="item">
+
+<div class="row">
+<div>
+<div class="title">${item.name}</div>
+<div class="muted">${item.category}</div>
+</div>
+
+<div>
+<button class="btn red" onclick="deleteFood(${item.id})">삭제</button>
+</div>
+</div>
+
+<div class="info row">
+<div>
+<div class="muted">냉동 보관</div>
+<div>${formatDate()} (냉동 ${item.days}일째)</div>
+</div>
+
+<div>
+<div class="muted">남은 수량</div>
+<div class="title">${item.amount}</div>
+</div>
+</div>
+
+</div>
+`).join(''):`
+<div class="card" style="text-align:center">
+🧊<br><br>
+아직 재고가 없어요
+</div>
+`;
+
+}
+
+function renderStats(){
+
+document.getElementById('content').innerHTML=`
+<div class="card">
+<h2>성장 기록</h2>
+
+<div>
+<div class="row">
+<div>26.05.09</div>
+<div>11.9kg · 77.8cm</div>
+</div>
+
+<div class="bar">
+<span style="width:83%"></span>
+</div>
+</div>
+
+</div>
+`;
+
+}
+
+function openModal(){
+document.getElementById('modal').classList.add('show');
+}
+
+function saveFood(){
+
+const name=document.getElementById('foodName').value;
+
+if(!name){
+alert('이름 입력해줘!');
+return;
+}
+
+inventory.unshift({
+id:Date.now(),
+name,
+category:document.getElementById('foodCategory').value,
+amount:Number(document.getElementById('foodAmount').value||0),
+days:0
+});
+
+document.getElementById('modal').classList.remove('show');
+
+document.getElementById('foodName').value='';
+document.getElementById('foodAmount').value='';
+
+render();
+
+}
+
+function deleteFood(id){
+
+if(confirm('삭제할까?')){
+inventory=inventory.filter(i=>i.id!==id);
+render();
+}
+
+}
+
+render();
+
+</script>
+
 </body>
 </html>
