@@ -777,6 +777,7 @@ function renderRecommend(){
       </select>
 
       <select id="mealFood">
+      <input id="mealFoodDirect" placeholder="재고에 없으면 직접 입력 예: 닭고기">
         <option value="">음식 선택</option>
         ${foods}
       </select>
@@ -1070,7 +1071,10 @@ function deleteInventory(id){
 }
 
 function saveMeal(){
-  const food = document.getElementById('mealFood').value;
+  const selectedFood = document.getElementById('mealFood').value;
+const directFood = document.getElementById('mealFoodDirect')?.value.trim();
+
+const food = directFood || selectedFood;
 
   if(!food){
     alert('음식을 선택해줘!');
