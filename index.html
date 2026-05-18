@@ -994,6 +994,13 @@ item=>item.id===id
 );
 
 if(!food) return;
+  if(food.usedToday){
+
+alert('오늘 이미 사용한 재료!');
+
+return;
+
+  }
 
 const meal =
 prompt(
