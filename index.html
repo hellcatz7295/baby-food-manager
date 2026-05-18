@@ -320,10 +320,17 @@ button{
 
 let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
 let meals = JSON.parse(localStorage.getItem('meals')) || [];
+let categories = JSON.parse(localStorage.getItem('categories')) || [
+  {key:'veg',name:'채소',class:'cat-veg'},
+  {key:'meat',name:'고기',class:'cat-meat'},
+  {key:'carb',name:'탄수',class:'cat-carb'},
+  {key:'snack',name:'간식',class:'cat-snack'}
+];
 
 function saveData(){
   localStorage.setItem('inventory',JSON.stringify(inventory));
   localStorage.setItem('meals',JSON.stringify(meals));
+  localStorage.setItem('categories',JSON.stringify(categories));
 }
 
 function showTab(id,el){
@@ -341,15 +348,32 @@ el.classList.add('active');
 
 }
 
+function renderCategoryOptions(){
+
+const select=document.getElementById('foodCategory');
+
+select.innerHTML='';
+
+categories.forEach(cat=>{
+select.innerHTML += `
+<option value="${cat.key}">
+${cat.name}
+</option>
+`;
+});
+
+}
+
 function addFood(){
 
-const name=document.getElementById('foodName').value;
+const name=document.getElementById('foodName').value.trim();
 const category=document.getElementById('foodCategory').value;
-const count=document.getElementById('foodCount').value;
+const count=parseInt(document.getElementById('foodCount').value);
 
 if(!name || !count) return;
 
 inventory.unshift({
+id:Date.now(),
 name,
 category,
 count,
@@ -364,46 +388,53 @@ document.getElementById('foodCount').value='';
 
 }
 
+function deleteFood(id){
+
+inventory = inventory.filter(item=>item.id !== id);
+
+saveData();
+renderInventory();
+
+}
+
+function editFood(id){
+
+const item = inventory.find(i=>i.id===id);
+
+const newName = prompt('재료명 수정', item.name);
+if(!newName) return;
+
+const newCount = prompt('수량 수정', item.count);
+
+item.name = newName;
+item.count = parseInt(newCount);
+
+saveData();
+renderInventory();
+
+}
+
 function renderInventory(){
 
 const list=document.getElementById('inventoryList');
+
 list.innerHTML='';
 
-inventory.forEach((item,index)=>{
+inventory.forEach((item)=>{
 
 const diff=Math.floor(
 (new Date()-new Date(item.date))
 /(1000*60*60*24)
 );
 
-let catName='';
-let catClass='';
-
-if(item.category==='veg'){
-catName='채소';
-catClass='cat-veg';
-}
-
-if(item.category==='meat'){
-catName='고기';
-catClass='cat-meat';
-}
-
-if(item.category==='carb'){
-catName='탄수';
-catClass='cat-carb';
-}
-
-if(item.category==='snack'){
-catName='간식';
-catClass='cat-snack';
-}
+const cat = categories.find(c=>c.key===item.category);
 
 list.innerHTML += `
+
 <div class="inventory-item">
 
-<div class="category ${catClass}">
-${catName}
+<div class="category ${cat.class}">
+${cat.name}
 </div>
 
 <div class="food-name">
@@ -412,19 +443,54 @@ ${item.name}
 
 <div class="food-meta">
 수량 ${item.count}개 · 
-${diff >=14 ? `<span class="danger">냉동 ${diff}일째</span>` : `냉동 ${diff}일째`}
+${diff >=14
+? `<span class="danger">냉동 ${diff}일째</span>`
+: `냉동 ${diff}일째`
+}
+</div>
+
+<div style="display:flex; gap:6px; margin-top:8px;">
+
+<button onclick="editFood(${item.id})"
+style="background:#B7B7B7; padding:8px; font-size:12px;">
+수정
+</button>
+
+<button onclick="deleteFood(${item.id})"
+style="background:#D45A5A; padding:8px; font-size:12px;">
+삭제
+</button>
+
 </div>
 
 </div>
+
 `;
 
 });
+
+renderMealFoodOptions();
+
+}
+
+function renderMealFoodOptions(){
+
+const input=document.getElementById('mealInput');
+
+let foodNames = inventory.map(i=>i.name);
+
+input.setAttribute(
+'placeholder',
+foodNames.length
+? `예: ${foodNames.slice(0,3).join(', ')}`
+: '먹은 음식 입력'
+);
 
 }
 
 function addMeal(){
 
-const value=document.getElementById('mealInput').value;
+const value=document.getElementById('mealInput').value.trim();
 
 if(!value) return;
 
@@ -433,8 +499,22 @@ name:value,
 date:new Date().toLocaleDateString()
 });
 
+const found = inventory.find(i=>i.name === value);
+
+if(found){
+
+found.count -=1;
+
+if(found.count <=0){
+inventory = inventory.filter(i=>i.id !== found.id);
+}
+
+}
+
 saveData();
+
 renderMeals();
+renderInventory();
 
 document.getElementById('mealInput').value='';
 
@@ -443,11 +523,25 @@ document.getElementById('mealInput').value='';
 function renderMeals(){
 
 const list=document.getElementById('mealList');
+
 list.innerHTML='';
+
+if(meals.length===0){
+
+list.innerHTML = `
+<div style="color:#888;font-size:13px;">
+아직 기록 없음
+</div>
+`;
+
+return;
+
+}
 
 meals.forEach(item=>{
 
 list.innerHTML += `
+
 <div class="record-item">
 
 <div class="record-date">
@@ -459,6 +553,7 @@ ${item.name}
 </div>
 
 </div>
+
 `;
 
 });
@@ -489,6 +584,7 @@ document.getElementById('dday').innerText=
 }
 
 setupDate();
+renderCategoryOptions();
 renderInventory();
 renderMeals();
 
