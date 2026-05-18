@@ -2056,28 +2056,7 @@ element.classList.add('active');
 }
 
   }
-  function changeTab(tabName, element){
-
-document.querySelectorAll('.page').forEach(page=>{
-page.classList.remove('active');
-});
-
-document.querySelectorAll('.tab').forEach(tab=>{
-tab.classList.remove('active');
-});
-
-const target =
-document.getElementById(tabName);
-
-if(target){
-target.classList.add('active');
-}
-
-if(element){
-element.classList.add('active');
-}
-
-  }
+  
 </script>
 
 </body>
