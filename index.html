@@ -1111,7 +1111,10 @@ document.getElementById('foodChipWrap');
 wrap.innerHTML='';
 
 appData.stocks
-.filter(item=>item.count>0)
+.filter(item=>
+item.count > 0 &&
+!item.hidden
+)
 .forEach(item=>{
 
 wrap.innerHTML += `
