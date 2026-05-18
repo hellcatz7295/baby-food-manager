@@ -1607,6 +1607,160 @@ ${food}
 });
 
   }
+  /* =========================
+즐겨찾기 메뉴
+========================= */
+
+if(!appData.favoriteMenus){
+
+appData.favoriteMenus = [];
+
+}
+
+function addFavoriteMenu(){
+
+const name =
+prompt('메뉴 이름');
+
+if(!name) return;
+
+const foods =
+prompt('재료 입력\n예: 브로콜리,두부');
+
+if(!foods) return;
+
+const memo =
+prompt('메모');
+
+appData.favoriteMenus.push({
+
+name,
+
+foods:
+foods.split(','),
+
+memo
+
+});
+
+saveData();
+
+renderFavoriteMenus();
+
+}
+
+function renderFavoriteMenus(){
+
+const list =
+document.getElementById('favoriteMenuList');
+
+if(!list) return;
+
+if(appData.favoriteMenus.length===0){
+
+list.innerHTML =
+`<div class="empty">
+즐겨찾기 메뉴 없음
+</div>`;
+
+return;
+
+}
+
+list.innerHTML='';
+
+appData.favoriteMenus.forEach(menu=>{
+
+list.innerHTML += `
+
+<div class="stock-item">
+
+<div class="food-name">
+⭐ ${menu.name}
+</div>
+
+<div class="food-meta">
+${menu.foods.join(' · ')}
+</div>
+
+${
+menu.memo
+?
+`<div class="memo">
+${menu.memo}
+</div>`
+:
+''
+}
+
+<div class="row"
+style="margin-top:8px;">
+
+<button class="small-btn"
+onclick="useFavoriteMenu('${menu.name}')">
+
+오늘 먹이기
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+function useFavoriteMenu(name){
+
+const menu =
+appData.favoriteMenus.find(
+m=>m.name===name
+);
+
+if(!menu) return;
+
+appData.todayRecords.push({
+
+date:new Date()
+.toISOString()
+.split('T')[0],
+
+meal:'추천메뉴',
+
+foods:menu.foods,
+
+memo:menu.memo
+
+});
+
+menu.foods.forEach(food=>{
+
+const stock =
+appData.stocks.find(
+item=>item.name===food
+);
+
+if(stock){
+
+stock.count -=1;
+
+stock.usedToday = true;
+
+}
+
+});
+
+saveData();
+
+renderStocks();
+renderTodayRecords();
+
+alert('오늘 기록에 추가 완료');
+
+}
 </script>
 
 </body>
