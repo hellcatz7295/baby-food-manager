@@ -1398,6 +1398,60 @@ renderStocks();
 
 init();
 
+  /* =========================
+NEW 재료 시스템
+========================= */
+
+if(!appData.newFoods){
+appData.newFoods = [];
+}
+
+function addNewFood(food){
+
+const exists =
+appData.newFoods.find(
+item=>item.name===food
+);
+
+if(exists) return;
+
+appData.newFoods.push({
+
+name:food,
+
+date:new Date()
+.toISOString()
+.split('T')[0]
+
+});
+
+saveData();
+
+}
+
+function isNewFood(food){
+
+const item =
+appData.newFoods.find(
+x=>x.name===food
+);
+
+if(!item) return false;
+
+const diff =
+Math.floor(
+(
+new Date()
+-
+new Date(item.date)
+)
+/
+(1000*60*60*24)
+);
+
+return diff <=1;
+
+}
 </script>
 
 </body>
