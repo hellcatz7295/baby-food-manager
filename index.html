@@ -1813,6 +1813,115 @@ renderTodayRecords();
 alert('오늘 기록에 추가 완료');
 
 }
+  /* =========================
+장보기
+========================= */
+
+if(!appData.shopping){
+
+appData.shopping = [];
+
+}
+
+function addShoppingItem(){
+
+const value =
+document.getElementById('shoppingInput').value;
+
+if(!value) return;
+
+appData.shopping.push({
+
+id:Date.now(),
+
+name:value,
+
+checked:false
+
+});
+
+saveData();
+
+renderShopping();
+
+document.getElementById('shoppingInput').value='';
+
+}
+
+function toggleShopping(id){
+
+const item =
+appData.shopping.find(
+x=>x.id===id
+);
+
+if(!item) return;
+
+item.checked = !item.checked;
+
+saveData();
+
+renderShopping();
+
+}
+
+function renderShopping(){
+
+const list =
+document.getElementById('shoppingList');
+
+if(!list) return;
+
+if(appData.shopping.length===0){
+
+list.innerHTML =
+`<div class="empty">
+장보기 없음
+</div>`;
+
+return;
+
+}
+
+list.innerHTML='';
+
+appData.shopping.forEach(item=>{
+
+list.innerHTML += `
+
+<div class="stock-item">
+
+<div class="row">
+
+<button class="small-btn
+${item.checked ? 'gray' : ''}"
+
+onclick="toggleShopping(${item.id})">
+
+${item.checked ? '✓' : '○'}
+
+</button>
+
+<div class="food-name"
+style="
+flex:4;
+padding-top:6px;
+opacity:${item.checked ? '.4' : '1'};
+">
+
+${item.name}
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
 </script>
 
 </body>
