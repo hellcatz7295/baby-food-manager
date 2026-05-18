@@ -1531,6 +1531,31 @@ renderTodayRecords();
 alert('어제 식단 복사 완료');
 
   }
+  /* =========================
+먹어본 재료 도감
+========================= */
+
+function getFoodDictionary(){
+
+let foods = [];
+
+appData.todayRecords.forEach(record=>{
+
+record.foods.forEach(food=>{
+
+if(!foods.includes(food)){
+
+foods.push(food);
+
+}
+
+});
+
+});
+
+return foods.sort();
+
+}
 </script>
 
 </body>
