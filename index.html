@@ -3,592 +3,331 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>Baby Food Manager V2</title>
-
 <style>
 :root{
-  --sage:#A8BFA2;
-  --sage-dark:#7F9779;
-  --bg:#F6F4EF;
-  --card:#FFFFFF;
-  --line:#E4E0D7;
-  --text:#2E2E2E;
-  --sub:#777;
-  --danger:#D45A5A;
+  --bg:#f7f4ee; --card:#fff; --line:#e5ded2; --text:#2c2c2c; --sub:#777;
+  --main:#9fb89a; --main2:#7f9b78; --red:#d65b5b; --yellow:#d6ad5f;
+  --blue:#8faec8; --pink:#c99aaa; --lav:#aaa1c8; --peach:#d7a27c;
 }
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Pretendard",sans-serif;
-}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  padding-bottom:90px;
-}
-
-header{
-  padding:18px 16px 10px;
-  border-bottom:1px solid var(--line);
-  background:#fff;
-  position:sticky;
-  top:0;
-  z-index:99;
-}
-
-.top-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-
-h1{
-  font-size:20px;
-  font-weight:700;
-}
-
-.dday{
-  font-size:13px;
-  color:var(--sage-dark);
-  font-weight:600;
-}
-
-.today{
-  font-size:13px;
-  color:var(--sub);
-  margin-top:4px;
-}
-
-.tabs{
-  display:flex;
-  gap:8px;
-  overflow:auto;
-}
-
-.tab{
-  padding:8px 14px;
-  background:#ECE8DE;
-  border-radius:10px;
-  font-size:13px;
-  white-space:nowrap;
-  cursor:pointer;
-}
-
-.tab.active{
-  background:var(--sage);
-  color:#fff;
-}
-
-.container{
-  padding:14px;
-}
-
-.section{
-  display:none;
-}
-
-.section.active{
-  display:block;
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:12px;
-}
-
-.card-title{
-  font-size:15px;
-  font-weight:700;
-  margin-bottom:12px;
-}
-
-input,select{
-  width:100%;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  margin-bottom:10px;
-  background:#fff;
-  font-size:14px;
-}
-
-button{
-  border:none;
-  background:var(--sage);
-  color:#fff;
-  padding:12px;
-  width:100%;
-  border-radius:10px;
-  font-size:14px;
-  font-weight:600;
-}
-
-.inventory-item{
-  border-bottom:1px solid #EFECE4;
-  padding:10px 0;
-}
-
-.inventory-item:last-child{
-  border-bottom:none;
-}
-
-.food-name{
-  font-weight:600;
-  margin-bottom:5px;
-}
-
-.food-meta{
-  font-size:12px;
-  color:var(--sub);
-}
-
-.danger{
-  color:var(--danger);
-  font-weight:700;
-}
-
-.category{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:999px;
-  font-size:11px;
-  margin-bottom:6px;
-  color:#fff;
-}
-
-.cat-veg{background:#91B87A;}
-.cat-meat{background:#C98B7A;}
-.cat-carb{background:#D1B16D;}
-.cat-snack{background:#C4A2D8;}
-
-.quick-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-
-.record-item{
-  padding:10px 0;
-  border-bottom:1px solid #EEE;
-}
-
-.record-date{
-  font-size:12px;
-  color:var(--sub);
-  margin-bottom:4px;
-}
-
-.floating{
-  position:fixed;
-  right:16px;
-  bottom:16px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:var(--sage-dark);
-  color:#fff;
-  font-size:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 10px rgba(0,0,0,.12);
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Pretendard",sans-serif}
+body{background:var(--bg);color:var(--text);padding-bottom:80px;font-size:14px}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:14px}
+.top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px}
+h1{font-size:20px}
+.sub{font-size:12px;color:var(--sub);margin-top:3px}
+.dday{font-size:13px;color:var(--main2);font-weight:800;white-space:nowrap}
+.tabs{display:flex;gap:6px;overflow:auto}
+.tab{border:1px solid var(--line);background:#eee8dd;padding:8px 11px;border-radius:9px;font-size:12px;white-space:nowrap}
+.tab.on{background:var(--main);color:#fff;border-color:var(--main)}
+.wrap{padding:12px}
+.page{display:none}.page.on{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px}
+.title{font-weight:800;margin-bottom:10px;font-size:15px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;margin-bottom:8px;font-size:14px}
+textarea{min-height:68px;resize:vertical}
+button{width:100%;border:0;border-radius:10px;padding:11px;background:var(--main);color:#fff;font-weight:800;font-size:13px}
+.row{display:flex;gap:6px}.row>*{flex:1}
+.mini{padding:8px;font-size:12px}
+.gray{background:#aaa}.red{background:var(--red)}.yellow{background:var(--yellow)}
+.item{border-top:1px solid #eee7dc;padding:10px 0}.item:first-child{border-top:0}
+.name{font-weight:800;margin-bottom:4px}
+.meta{font-size:12px;color:var(--sub);line-height:1.5}
+.badge{display:inline-block;color:#fff;font-size:11px;padding:3px 8px;border-radius:999px;margin-bottom:5px}
+.warn{color:var(--red);font-weight:900}
+.empty{font-size:13px;color:#999;padding:10px 0}
+.memo{background:#f7f4ef;border-radius:9px;padding:7px;margin-top:6px;font-size:12px;color:#666}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.quick{background:#f1ece3;color:#444;border:1px solid var(--line)}
+hr{border:0;border-top:1px solid var(--line);margin:10px 0}
 </style>
 </head>
-
 <body>
 
 <header>
-
-<div class="top-title">
-<div>
-<h1>Baby Food Manager</h1>
-<div class="today" id="today"></div>
-</div>
-
-<div class="dday" id="dday"></div>
-</div>
-
-<div class="tabs">
-<div class="tab active" onclick="showTab('inventory',this)">냉동재고</div>
-<div class="tab" onclick="showTab('meal',this)">식단기록</div>
-<div class="tab" onclick="showTab('recommend',this)">추천음식</div>
-<div class="tab" onclick="showTab('stats',this)">통계</div>
-</div>
-
+  <div class="top">
+    <div>
+      <h1>Baby Food Manager</h1>
+      <div class="sub" id="today"></div>
+    </div>
+    <div class="dday" id="dday"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="tab('stock',this)">냉동재고</button>
+    <button class="tab" onclick="tab('meal',this)">식단기록</button>
+    <button class="tab" onclick="tab('plan',this)">오늘/어제/내일</button>
+    <button class="tab" onclick="tab('rec',this)">추천음식</button>
+    <button class="tab" onclick="tab('stat',this)">통계</button>
+    <button class="tab" onclick="tab('set',this)">설정</button>
+  </div>
 </header>
 
-<div class="container">
+<div class="wrap">
 
-<!-- 재고 -->
-<section class="section active" id="inventory">
+<section id="stock" class="page on">
+  <div class="card">
+    <div class="title">재고 추가</div>
+    <input id="sName" placeholder="재고명 예: 닭고기큐브">
+    <select id="sCat"></select>
+    <input id="sCount" type="number" placeholder="수량 예: 6">
+    <input id="sDate" type="date">
+    <textarea id="sMemo" placeholder="메모 / 알레르기 / 반응"></textarea>
+    <button onclick="addStock()">추가</button>
+  </div>
 
-<div class="card">
+  <div class="card">
+    <div class="title">재고 검색/정렬</div>
+    <input id="search" oninput="render()" placeholder="검색">
+    <select id="sort" onchange="render()">
+      <option value="old">오래된 순</option>
+      <option value="new">최근 추가 순</option>
+      <option value="name">이름순</option>
+      <option value="count">수량 적은 순</option>
+    </select>
+  </div>
 
-<div class="card-title">재고 추가</div>
-
-<input type="text" id="foodName" placeholder="재료명"/>
-
-<select id="foodCategory">
-<option value="veg">채소</option>
-<option value="meat">고기</option>
-<option value="carb">탄수</option>
-<option value="snack">간식</option>
-</select>
-
-<input type="number" id="foodCount" placeholder="수량"/>
-
-<button onclick="addFood()">추가하기</button>
-
-</div>
-
-<div class="card">
-
-<div class="card-title">현재 재고</div>
-
-<div id="inventoryList"></div>
-
-</div>
-
+  <div class="card">
+    <div class="title">현재 재고</div>
+    <div id="stockList"></div>
+  </div>
 </section>
 
-<!-- 기록 -->
-<section class="section" id="meal">
+<section id="meal" class="page">
+  <div class="card">
+    <div class="title">식단 기록</div>
+    <select id="mealWhen">
+      <option value="아침">아침</option>
+      <option value="점심">점심</option>
+      <option value="저녁">저녁</option>
+      <option value="간식">간식</option>
+      <option value="수유">수유</option>
+    </select>
+    <input id="mealDate" type="date">
+    <select id="mealStock"></select>
+    <input id="mealDirect" placeholder="재고에 없으면 직접 입력">
+    <textarea id="mealMemo" placeholder="먹은 양 / 반응 / 메모"></textarea>
+    <button onclick="addMeal()">기록 + 재고 자동차감</button>
+  </div>
 
-<div class="card">
+  <div class="card">
+    <div class="title">빠른 기록</div>
+    <div class="grid" id="quickBox"></div>
+  </div>
 
-<div class="card-title">오늘 먹은 음식</div>
-
-<input type="text" id="mealInput" placeholder="먹은 음식 입력"/>
-
-<button onclick="addMeal()">기록하기</button>
-
-</div>
-
-<div class="card">
-
-<div class="card-title">기록</div>
-
-<div id="mealList"></div>
-
-</div>
-
+  <div class="card">
+    <div class="title">전체 기록</div>
+    <div id="mealList"></div>
+  </div>
 </section>
 
-<!-- 추천 -->
-<section class="section" id="recommend">
-
-<div class="card">
-<div class="card-title">추천 음식</div>
-
-<div class="record-item">닭고기 브로콜리 볶음</div>
-<div class="record-item">단호박 토마토 카레</div>
-<div class="record-item">게살 숙주 볶음</div>
-
-</div>
-
+<section id="plan" class="page">
+  <div class="card">
+    <div class="title">오늘 / 어제 / 내일</div>
+    <div id="dayList"></div>
+  </div>
 </section>
 
-<!-- 통계 -->
-<section class="section" id="stats">
+<section id="rec" class="page">
+  <div class="card">
+    <div class="title">추천음식</div>
+    <div class="meta">최근 3일 먹은 음식은 제외해서 보여줘.</div>
+    <hr>
+    <div id="recList"></div>
+  </div>
+</section>
 
-<div class="card">
+<section id="stat" class="page">
+  <div class="card">
+    <div class="title">자주 먹은 음식</div>
+    <div id="statList"></div>
+  </div>
+</section>
 
-<div class="card-title">자주 먹은 음식</div>
+<section id="set" class="page">
+  <div class="card">
+    <div class="title">카테고리 추가</div>
+    <input id="catName" placeholder="예: 뿌리채소">
+    <input id="catColor" type="color" value="#9fb89a">
+    <button onclick="addCat()">카테고리 추가</button>
+  </div>
 
-<div class="record-item">닭고기 12회</div>
-<div class="record-item">브로콜리 8회</div>
-<div class="record-item">단호박 6회</div>
+  <div class="card">
+    <div class="title">카테고리 관리</div>
+    <div id="catList"></div>
+  </div>
 
-</div>
-
+  <div class="card">
+    <div class="title">백업 / 복원</div>
+    <button onclick="backup()">백업 복사</button>
+    <br><br>
+    <textarea id="restoreText" placeholder="백업한 글 붙여넣기"></textarea>
+    <button onclick="restore()">복원</button>
+    <br><br>
+    <button class="red" onclick="resetAll()">전체 초기화</button>
+  </div>
 </section>
 
 </div>
-
-<div class="floating">+</div>
 
 <script>
+const babyBirth='2025-05-12';
+const baseRecs=['게살 숙주 닭고기 볶음','단호박 토마토 카레','근대 양송이 볶음','밤치즈볼','밤쿠키','비트 가지 볶음','파프리카 계란볶음','브로콜리 치즈볼'];
 
-let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-let meals = JSON.parse(localStorage.getItem('meals')) || [];
-let categories = JSON.parse(localStorage.getItem('categories')) || [
-  {key:'veg',name:'채소',class:'cat-veg'},
-  {key:'meat',name:'고기',class:'cat-meat'},
-  {key:'carb',name:'탄수',class:'cat-carb'},
-  {key:'snack',name:'간식',class:'cat-snack'}
-];
+let data=JSON.parse(localStorage.getItem('bfm_v2'))||{
+  cats:[
+    {id:'veg',name:'채소',color:'#8EB486'},
+    {id:'meat',name:'고기',color:'#C98D7B'},
+    {id:'carb',name:'탄수',color:'#D7B467'},
+    {id:'snack',name:'간식',color:'#B69AD8'}
+  ],
+  stock:[],
+  meals:[]
+};
 
-function saveData(){
-  localStorage.setItem('inventory',JSON.stringify(inventory));
-  localStorage.setItem('meals',JSON.stringify(meals));
-  localStorage.setItem('categories',JSON.stringify(categories));
+function save(){localStorage.setItem('bfm_v2',JSON.stringify(data))}
+function todayISO(d=new Date()){return d.toISOString().slice(0,10)}
+function days(a,b=new Date()){return Math.floor((b-new Date(a))/(86400000))}
+function fmt(d){return new Date(d).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function tab(id,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.getElementById(id).classList.add('on'); el.classList.add('on'); render();
 }
 
-function showTab(id,el){
-
-document.querySelectorAll('.section').forEach(s=>{
-s.classList.remove('active');
-});
-
-document.querySelectorAll('.tab').forEach(t=>{
-t.classList.remove('active');
-});
-
-document.getElementById(id).classList.add('active');
-el.classList.add('active');
-
+function init(){
+  document.getElementById('today').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('dday').textContent='재하 D+'+days(babyBirth);
+  document.getElementById('sDate').value=todayISO();
+  document.getElementById('mealDate').value=todayISO();
+  render();
 }
 
-function renderCategoryOptions(){
-
-const select=document.getElementById('foodCategory');
-
-select.innerHTML='';
-
-categories.forEach(cat=>{
-select.innerHTML += `
-<option value="${cat.key}">
-${cat.name}
-</option>
-`;
-});
-
+function addStock(){
+  const name=sName.value.trim(), count=Number(sCount.value);
+  if(!name||!count) return alert('재고명/수량 입력!');
+  data.stock.push({id:Date.now(),name,cat:sCat.value,count,date:sDate.value||todayISO(),memo:sMemo.value.trim()});
+  sName.value='';sCount.value='';sMemo.value='';sDate.value=todayISO();
+  save();render();
 }
 
-function addFood(){
-
-const name=document.getElementById('foodName').value.trim();
-const category=document.getElementById('foodCategory').value;
-const count=parseInt(document.getElementById('foodCount').value);
-
-if(!name || !count) return;
-
-inventory.unshift({
-id:Date.now(),
-name,
-category,
-count,
-date:new Date().toISOString()
-});
-
-saveData();
-renderInventory();
-
-document.getElementById('foodName').value='';
-document.getElementById('foodCount').value='';
-
+function editStock(id){
+  const x=data.stock.find(i=>i.id===id);
+  const n=prompt('재고명',x.name); if(!n)return;
+  const c=prompt('수량',x.count); if(c===null)return;
+  const m=prompt('메모',x.memo||'');
+  x.name=n; x.count=Number(c)||0; x.memo=m||'';
+  save();render();
 }
 
-function deleteFood(id){
-
-inventory = inventory.filter(item=>item.id !== id);
-
-saveData();
-renderInventory();
-
+function delStock(id){
+  if(!confirm('삭제할까?'))return;
+  data.stock=data.stock.filter(i=>i.id!==id); save();render();
 }
 
-function editFood(id){
+function addMeal(name){
+  const selected=mealStock.value;
+  const direct=(name||mealDirect.value.trim());
+  let food=direct;
+  let stockId=null;
 
-const item = inventory.find(i=>i.id===id);
+  if(!food && selected){
+    const s=data.stock.find(i=>String(i.id)===selected);
+    if(s){food=s.name;stockId=s.id}
+  }
+  if(!food)return alert('음식 선택 또는 직접 입력!');
 
-const newName = prompt('재료명 수정', item.name);
-if(!newName) return;
+  data.meals.push({id:Date.now(),date:mealDate.value||todayISO(),when:mealWhen.value,name:food,memo:mealMemo.value.trim()});
 
-const newCount = prompt('수량 수정', item.count);
+  const target=stockId?data.stock.find(i=>i.id===stockId):data.stock.find(i=>i.name===food);
+  if(target){target.count--; if(target.count<=0)data.stock=data.stock.filter(i=>i.id!==target.id)}
 
-item.name = newName;
-item.count = parseInt(newCount);
-
-saveData();
-renderInventory();
-
+  mealDirect.value=''; mealMemo.value='';
+  save();render();
 }
 
-function renderInventory(){
-
-const list=document.getElementById('inventoryList');
-
-list.innerHTML='';
-
-inventory.forEach((item)=>{
-
-const diff=Math.floor(
-(new Date()-new Date(item.date))
-/(1000*60*60*24)
-);
-
-const cat = categories.find(c=>c.key===item.category);
-
-list.innerHTML += `
-
-<div class="inventory-item">
-
-<div class="category ${cat.class}">
-${cat.name}
-</div>
-
-<div class="food-name">
-${item.name}
-</div>
-
-<div class="food-meta">
-수량 ${item.count}개 · 
-${diff >=14
-? `<span class="danger">냉동 ${diff}일째</span>`
-: `냉동 ${diff}일째`
-}
-</div>
-
-<div style="display:flex; gap:6px; margin-top:8px;">
-
-<button onclick="editFood(${item.id})"
-style="background:#B7B7B7; padding:8px; font-size:12px;">
-수정
-</button>
-
-<button onclick="deleteFood(${item.id})"
-style="background:#D45A5A; padding:8px; font-size:12px;">
-삭제
-</button>
-
-</div>
-
-</div>
-
-`;
-
-});
-
-renderMealFoodOptions();
-
+function addCat(){
+  const name=catName.value.trim(); if(!name)return;
+  data.cats.push({id:'cat'+Date.now(),name,color:catColor.value});
+  catName.value=''; save();render();
 }
 
-function renderMealFoodOptions(){
-
-const input=document.getElementById('mealInput');
-
-let foodNames = inventory.map(i=>i.name);
-
-input.setAttribute(
-'placeholder',
-foodNames.length
-? `예: ${foodNames.slice(0,3).join(', ')}`
-: '먹은 음식 입력'
-);
-
+function editCat(id){
+  const c=data.cats.find(x=>x.id===id);
+  const n=prompt('카테고리명',c.name); if(!n)return;
+  c.name=n; save();render();
 }
 
-function addMeal(){
-
-const value=document.getElementById('mealInput').value.trim();
-
-if(!value) return;
-
-meals.unshift({
-name:value,
-date:new Date().toLocaleDateString()
-});
-
-const found = inventory.find(i=>i.name === value);
-
-if(found){
-
-found.count -=1;
-
-if(found.count <=0){
-inventory = inventory.filter(i=>i.id !== found.id);
+function delCat(id){
+  if(['veg','meat','carb','snack'].includes(id))return alert('기본 카테고리는 삭제 안할게!');
+  data.cats=data.cats.filter(c=>c.id!==id);
+  data.stock.forEach(s=>{if(s.cat===id)s.cat='veg'});
+  save();render();
 }
 
+function render(){
+  sCat.innerHTML=data.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  mealStock.innerHTML='<option value="">재고에서 선택</option>'+data.stock.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.count})</option>`).join('');
+
+  const q=search?.value?.trim()||'';
+  let list=[...data.stock].filter(s=>s.name.includes(q));
+  if(sort?.value==='old')list.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(sort?.value==='new')list.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(sort?.value==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  if(sort?.value==='count')list.sort((a,b)=>a.count-b.count);
+
+  stockList.innerHTML=list.length?list.map(s=>{
+    const c=data.cats.find(x=>x.id===s.cat)||data.cats[0];
+    const d=days(s.date);
+    return `<div class="item">
+      <span class="badge" style="background:${c.color}">${esc(c.name)}</span>
+      <div class="name">${esc(s.name)}</div>
+      <div class="meta">수량 ${s.count}개 · ${fmt(s.date)} · ${d>=14?`<span class="warn">냉동 ${d}일째</span>`:`냉동 ${d}일째`}</div>
+      ${s.memo?`<div class="memo">${esc(s.memo)}</div>`:''}
+      <div class="row"><button class="mini gray" onclick="editStock(${s.id})">수정</button><button class="mini red" onclick="delStock(${s.id})">삭제</button></div>
+    </div>`
+  }).join(''):'<div class="empty">재고 없음</div>';
+
+  mealList.innerHTML=data.meals.length?[...data.meals].reverse().map(m=>`<div class="item">
+    <div class="record-date">${fmt(m.date)} · ${esc(m.when)}</div>
+    <div class="name">${esc(m.name)}</div>
+    ${m.memo?`<div class="memo">${esc(m.memo)}</div>`:''}
+  </div>`).join(''):'<div class="empty">기록 없음</div>';
+
+  const t=todayISO(), y=todayISO(new Date(Date.now()-86400000)), tm=todayISO(new Date(Date.now()+86400000));
+  dayList.innerHTML=[['어제',y],['오늘',t],['내일',tm]].map(([label,date])=>{
+    const arr=data.meals.filter(m=>m.date===date);
+    return `<div class="item"><div class="title">${label} · ${fmt(date)}</div>${arr.length?arr.map(m=>`<div class="meta">${esc(m.when)} - ${esc(m.name)}</div>`).join(''):'<div class="empty">기록 없음</div>'}</div>`
+  }).join('');
+
+  const recent=data.meals.filter(m=>days(m.date)<=3).map(m=>m.name);
+  recList.innerHTML=baseRecs.filter(r=>!recent.includes(r)).map(r=>`<div class="item"><div class="name">${esc(r)}</div></div>`).join('')||'<div class="empty">최근 먹은 음식 제외하니 추천 없음</div>';
+
+  const stat={}; data.meals.forEach(m=>stat[m.name]=(stat[m.name]||0)+1);
+  statList.innerHTML=Object.entries(stat).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<div class="item"><b>${esc(n)}</b> ${c}회</div>`).join('')||'<div class="empty">통계 없음</div>';
+
+  catList.innerHTML=data.cats.map(c=>`<div class="item">
+    <span class="badge" style="background:${c.color}">${esc(c.name)}</span>
+    <div class="row"><button class="mini gray" onclick="editCat('${c.id}')">수정</button><button class="mini red" onclick="delCat('${c.id}')">삭제</button></div>
+  </div>`).join('');
+
+  const quick=[...new Set(data.stock.map(s=>s.name))].slice(0,8);
+  quickBox.innerHTML=quick.length?quick.map(n=>`<button class="quick" onclick="addMeal('${esc(n)}')">${esc(n)}</button>`).join(''):'<div class="empty">재고 추가하면 빠른 기록 버튼 생김</div>';
 }
 
-saveData();
-
-renderMeals();
-renderInventory();
-
-document.getElementById('mealInput').value='';
-
+function backup(){
+  navigator.clipboard.writeText(JSON.stringify(data));
+  alert('백업 복사됨!');
 }
-
-function renderMeals(){
-
-const list=document.getElementById('mealList');
-
-list.innerHTML='';
-
-if(meals.length===0){
-
-list.innerHTML = `
-<div style="color:#888;font-size:13px;">
-아직 기록 없음
-</div>
-`;
-
-return;
-
+function restore(){
+  try{data=JSON.parse(restoreText.value);save();render();alert('복원 완료!')}
+  catch(e){alert('백업 글이 이상해!')}
 }
-
-meals.forEach(item=>{
-
-list.innerHTML += `
-
-<div class="record-item">
-
-<div class="record-date">
-${item.date}
-</div>
-
-<div>
-${item.name}
-</div>
-
-</div>
-
-`;
-
-});
-
+function resetAll(){
+  if(confirm('진짜 전체 초기화?')){localStorage.removeItem('bfm_v2');location.reload()}
 }
-
-function setupDate(){
-
-const today=new Date();
-
-document.getElementById('today').innerText=
-today.toLocaleDateString('ko-KR',{
-year:'numeric',
-month:'long',
-day:'numeric',
-weekday:'long'
-});
-
-const birthday=new Date('2025-05-12');
-
-const diff=Math.floor(
-(today-birthday)/(1000*60*60*24)
-);
-
-document.getElementById('dday').innerText=
-`재하 D+${diff}`;
-
-}
-
-setupDate();
-renderCategoryOptions();
-renderInventory();
-renderMeals();
-
+init();
 </script>
-
 </body>
 </html>
