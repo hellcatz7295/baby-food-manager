@@ -1,1 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+<title>Baby Food Manager V2</title>
+
+<style>
+:root{
+  --sage:#A8BFA2;
+  --sage-dark:#7F9779;
+  --bg:#F6F4EF;
+  --card:#FFFFFF;
+  --line:#E4E0D7;
+  --text:#2E2E2E;
+  --sub:#777;
+  --danger:#D45A5A;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Pretendard",sans-serif;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  padding-bottom:90px;
+}
+
+header{
+  padding:18px 16px 10px;
+  border-bottom:1px solid var(--line);
+  background:#fff;
+  position:sticky;
+  top:0;
+  z-index:99;
+}
+
+.top-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+h1{
+  font-size:20px;
+  font-weight:700;
+}
+
+.dday{
+  font-size:13px;
+  color:var(--sage-dark);
+  font-weight:600;
+}
+
+.today{
+  font-size:13px;
+  color:var(--sub);
+  margin-top:4px;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow:auto;
+}
+
+.tab{
+  padding:8px 14px;
+  background:#ECE8DE;
+  border-radius:10px;
+  font-size:13px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--sage);
+  color:#fff;
+}
+
+.container{
+  padding:14px;
+}
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.card-title{
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:12px;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  margin-bottom:10px;
+  background:#fff;
+  font-size:14px;
+}
+
+button{
+  border:none;
+  background:var(--sage);
+  color:#fff;
+  padding:12px;
+  width:100%;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+}
+
+.inventory-item{
+  border-bottom:1px solid #EFECE4;
+  padding:10px 0;
+}
+
+.inventory-item:last-child{
+  border-bottom:none;
+}
+
+.food-name{
+  font-weight:600;
+  margin-bottom:5px;
+}
+
+.food-meta{
+  font-size:12px;
+  color:var(--sub);
+}
+
+.danger{
+  color:var(--danger);
+  font-weight:700;
+}
+
+.category{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  margin-bottom:6px;
+  color:#fff;
+}
+
+.cat-veg{background:#91B87A;}
+.cat-meat{background:#C98B7A;}
+.cat-carb{background:#D1B16D;}
+.cat-snack{background:#C4A2D8;}
+
+.quick-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.record-item{
+  padding:10px 0;
+  border-bottom:1px solid #EEE;
+}
+
+.record-date{
+  font-size:12px;
+  color:var(--sub);
+  margin-bottom:4px;
+}
+
+.floating{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--sage-dark);
+  color:#fff;
+  font-size:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="top-title">
+<div>
+<h1>Baby Food Manager</h1>
+<div class="today" id="today"></div>
+</div>
+
+<div class="dday" id="dday"></div>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('inventory',this)">냉동재고</div>
+<div class="tab" onclick="showTab('meal',this)">식단기록</div>
+<div class="tab" onclick="showTab('recommend',this)">추천음식</div>
+<div class="tab" onclick="showTab('stats',this)">통계</div>
+</div>
+
+</header>
+
+<div class="container">
+
+<!-- 재고 -->
+<section class="section active" id="inventory">
+
+<div class="card">
+
+<div class="card-title">재고 추가</div>
+
+<input type="text" id="foodName" placeholder="재료명"/>
+
+<select id="foodCategory">
+<option value="veg">채소</option>
+<option value="meat">고기</option>
+<option value="carb">탄수</option>
+<option value="snack">간식</option>
+</select>
+
+<input type="number" id="foodCount" placeholder="수량"/>
+
+<button onclick="addFood()">추가하기</button>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">현재 재고</div>
+
+<div id="inventoryList"></div>
+
+</div>
+
+</section>
+
+<!-- 기록 -->
+<section class="section" id="meal">
+
+<div class="card">
+
+<div class="card-title">오늘 먹은 음식</div>
+
+<input type="text" id="mealInput" placeholder="먹은 음식 입력"/>
+
+<button onclick="addMeal()">기록하기</button>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">기록</div>
+
+<div id="mealList"></div>
+
+</div>
+
+</section>
+
+<!-- 추천 -->
+<section class="section" id="recommend">
+
+<div class="card">
+<div class="card-title">추천 음식</div>
+
+<div class="record-item">닭고기 브로콜리 볶음</div>
+<div class="record-item">단호박 토마토 카레</div>
+<div class="record-item">게살 숙주 볶음</div>
+
+</div>
+
+</section>
+
+<!-- 통계 -->
+<section class="section" id="stats">
+
+<div class="card">
+
+<div class="card-title">자주 먹은 음식</div>
+
+<div class="record-item">닭고기 12회</div>
+<div class="record-item">브로콜리 8회</div>
+<div class="record-item">단호박 6회</div>
+
+</div>
+
+</section>
+
+</div>
+
+<div class="floating">+</div>
+
+<script>
+
+let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let meals = JSON.parse(localStorage.getItem('meals')) || [];
+
+function saveData(){
+  localStorage.setItem('inventory',JSON.stringify(inventory));
+  localStorage.setItem('meals',JSON.stringify(meals));
+}
+
+function showTab(id,el){
+
+document.querySelectorAll('.section').forEach(s=>{
+s.classList.remove('active');
+});
+
+document.querySelectorAll('.tab').forEach(t=>{
+t.classList.remove('active');
+});
+
+document.getElementById(id).classList.add('active');
+el.classList.add('active');
+
+}
+
+function addFood(){
+
+const name=document.getElementById('foodName').value;
+const category=document.getElementById('foodCategory').value;
+const count=document.getElementById('foodCount').value;
+
+if(!name || !count) return;
+
+inventory.unshift({
+name,
+category,
+count,
+date:new Date().toISOString()
+});
+
+saveData();
+renderInventory();
+
+document.getElementById('foodName').value='';
+document.getElementById('foodCount').value='';
+
+}
+
+function renderInventory(){
+
+const list=document.getElementById('inventoryList');
+list.innerHTML='';
+
+inventory.forEach((item,index)=>{
+
+const diff=Math.floor(
+(new Date()-new Date(item.date))
+/(1000*60*60*24)
+);
+
+let catName='';
+let catClass='';
+
+if(item.category==='veg'){
+catName='채소';
+catClass='cat-veg';
+}
+
+if(item.category==='meat'){
+catName='고기';
+catClass='cat-meat';
+}
+
+if(item.category==='carb'){
+catName='탄수';
+catClass='cat-carb';
+}
+
+if(item.category==='snack'){
+catName='간식';
+catClass='cat-snack';
+}
+
+list.innerHTML += `
+<div class="inventory-item">
+
+<div class="category ${catClass}">
+${catName}
+</div>
+
+<div class="food-name">
+${item.name}
+</div>
+
+<div class="food-meta">
+수량 ${item.count}개 · 
+${diff >=14 ? `<span class="danger">냉동 ${diff}일째</span>` : `냉동 ${diff}일째`}
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+function addMeal(){
+
+const value=document.getElementById('mealInput').value;
+
+if(!value) return;
+
+meals.unshift({
+name:value,
+date:new Date().toLocaleDateString()
+});
+
+saveData();
+renderMeals();
+
+document.getElementById('mealInput').value='';
+
+}
+
+function renderMeals(){
+
+const list=document.getElementById('mealList');
+list.innerHTML='';
+
+meals.forEach(item=>{
+
+list.innerHTML += `
+<div class="record-item">
+
+<div class="record-date">
+${item.date}
+</div>
+
+<div>
+${item.name}
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+function setupDate(){
+
+const today=new Date();
+
+document.getElementById('today').innerText=
+today.toLocaleDateString('ko-KR',{
+year:'numeric',
+month:'long',
+day:'numeric',
+weekday:'long'
+});
+
+const birthday=new Date('2025-05-12');
+
+const diff=Math.floor(
+(today-birthday)/(1000*60*60*24)
+);
+
+document.getElementById('dday').innerText=
+`재하 D+${diff}`;
+
+}
+
+setupDate();
+renderInventory();
+renderMeals();
+
+</script>
+
+</body>
+</html>
