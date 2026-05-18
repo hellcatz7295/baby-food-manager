@@ -440,14 +440,15 @@ placeholder="특이사항 / 메모"></textarea>
 
 <button onclick="saveTodayMeal()">
 오늘 기록 저장
-  <br><br>
+</button>
+
+<br><br>
 
 <button class="gray"
 onclick="copyYesterdayMeal()">
 
 어제 식단 복사
 
-</button>
 </button>
 
 </div>
@@ -2034,29 +2035,6 @@ bad.innerHTML += `
 }
 
 }
-  function changeTab(tabName, element){
-
-document.querySelectorAll('.page').forEach(page=>{
-page.classList.remove('active');
-});
-
-document.querySelectorAll('.tab').forEach(tab=>{
-tab.classList.remove('active');
-});
-
-const target =
-document.getElementById(tabName);
-
-if(target){
-target.classList.add('active');
-}
-
-if(element){
-element.classList.add('active');
-}
-
-  }
-  
 </script>
 
 </body>
