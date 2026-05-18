@@ -505,86 +505,158 @@ function render(){
   renderInventoryFiltered('');
 }
 
-function renderInventoryFiltered(q){
+  function renderInventoryFiltered(q){
+
   const list = [...inventory]
-    .filter(i =>
-      i.name.includes(q || '') ||
-      i.category.includes(q || '')
+    .filter(item =>
+      item.name.includes(q || '') ||
+      item.category.includes(q || '')
     )
-    .sort((a,b) => frozenDays(b) - frozenDays(a));
+    .sort((a,b) => {
+
+      if(a.category < b.category) return -1;
+      if(a.category > b.category) return 1;
+
+      return frozenDays(b) - frozenDays(a);
+
+    });
+
+  const grouped = {};
+
+  list.forEach(item => {
+
+    if(!grouped[item.category]){
+      grouped[item.category] = [];
+    }
+
+    grouped[item.category].push(item);
+
+  });
 
   document.getElementById('inventoryList').innerHTML =
-    list.length
-      ? `
-      <div class="list">
-        ${list.map(i => `
-          <div class="item">
-            <div class="row">
-              <div>
+
+    Object.keys(grouped).length
+
+    ? Object.entries(grouped).map(([category, items]) => `
+
+      <div class="card">
+
+        <h2>${category}</h2>
+
+        <div class="list">
+
+          ${items.map(item => `
+
+            <div class="item">
+
+              <div class="row">
+
                 <div>
-                  <span class="title">${i.name}</span>
+
+                  <div>
+
+                    <span class="title">
+                      ${item.name}
+                    </span>
+
+                    <button
+                      class="btn"
+                      onclick="toggleFav('${item.name}')"
+                    >
+                      ${favorites.includes(item.name) ? '⭐' : '☆'}
+                    </button>
+
+                  </div>
+
+                  <div class="muted">
+                    ${item.memo || ''}
+                  </div>
+
+                </div>
+
+                <div>
 
                   <button
                     class="btn"
-                    onclick="toggleFav('${i.name}')"
+                    onclick="editInventory(${item.id})"
                   >
-                    ${favorites.includes(i.name) ? '⭐' : '☆'}
+                    수정
                   </button>
+
+                  <button
+                    class="btn red"
+                    onclick="deleteInventory(${item.id})"
+                  >
+                    삭제
+                  </button>
+
                 </div>
 
-                <div class="muted">
-                  ${i.category} · ${i.memo || ''}
+              </div>
+
+              <div class="infoBox row">
+
+                <div>
+
+                  <div class="muted">
+                    ${item.type || '냉동'} 보관
+                  </div>
+
+                  <b class="${
+                    frozenDays(item) >= 14 &&
+                    item.type === '냉동'
+                      ? 'danger'
+                      : ''
+                  }">
+
+                    ${fmt(new Date(item.createdAt || new Date()))}
+
+                    (${item.type || '냉동'} ${frozenDays(item)}일째)
+
+                  </b>
+
                 </div>
+
+                <div style="text-align:right">
+
+                  <div class="muted">
+                    남은 수량
+                  </div>
+
+                  <b style="font-size:22px">
+                    ${item.amount}
+                  </b>
+
+                </div>
+
               </div>
 
-              <div>
-                <button
-                  class="btn"
-                  onclick="editInventory(${i.id})"
-                >
-                  수정
-                </button>
-
-                <button
-                  class="btn red"
-                  onclick="deleteInventory(${i.id})"
-                >
-                  삭제
-                </button>
-              </div>
             </div>
 
-            <div class="infoBox row">
-              <div>
-                <div class="muted">${i.type || '냉동'} 보관</div>
+          `).join('')}
 
-                <b class="${
-                  frozenDays(i) >= 14 && i.type === '냉동'
-                    ? 'danger'
-                    : ''
-                }">
-                  ${fmt(new Date(i.createdAt || new Date()))}
-                  (${i.type || '냉동'} ${frozenDays(i)}일째)
-                </b>
-              </div>
+        </div>
 
-              <div style="text-align:right">
-                <div class="muted">남은 수량</div>
-                <b style="font-size:22px">${i.amount}</b>
-              </div>
-            </div>
-          </div>
-        `).join('')}
       </div>
-    `
-      : `
+
+    `).join('')
+
+    : `
+
       <div class="card" style="text-align:center">
+
         🧊<br><br>
+
         아직 재고가 없어요<br>
-        <span class="muted">+ 추가 버튼으로 등록해줘</span>
+
+        <span class="muted">
+          + 추가 버튼으로 등록해줘
+        </span>
+
       </div>
+
     `;
-}
+  }
   function renderCalendar(){
   const now = new Date();
   const year = now.getFullYear();
