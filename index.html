@@ -1923,6 +1923,115 @@ ${item.name}
 });
 
 }
+  /* =========================
+궁합 / 주의조합
+========================= */
+
+if(!appData.goodCombos){
+
+appData.goodCombos = [
+'브로콜리+치즈',
+'브로콜리+양송이버섯'
+];
+
+}
+
+if(!appData.badCombos){
+
+appData.badCombos = [
+'시금치+두부',
+'감+우유'
+];
+
+}
+
+function addGoodCombo(){
+
+const value =
+prompt(
+'좋은 궁합 입력\n예: 브로콜리+치즈'
+);
+
+if(!value) return;
+
+appData.goodCombos.push(value);
+
+saveData();
+
+renderCombos();
+
+}
+
+function addBadCombo(){
+
+const value =
+prompt(
+'주의 조합 입력\n예: 감+우유'
+);
+
+if(!value) return;
+
+appData.badCombos.push(value);
+
+saveData();
+
+renderCombos();
+
+}
+
+function renderCombos(){
+
+const good =
+document.getElementById('goodComboList');
+
+const bad =
+document.getElementById('badComboList');
+
+if(good){
+
+good.innerHTML='';
+
+appData.goodCombos.forEach(item=>{
+
+good.innerHTML += `
+
+<div class="stock-item">
+
+<div class="food-meta">
+${item}
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+if(bad){
+
+bad.innerHTML='';
+
+appData.badCombos.forEach(item=>{
+
+bad.innerHTML += `
+
+<div class="stock-item">
+
+<div class="food-meta">
+⚠ ${item}
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+}
 </script>
 
 </body>
