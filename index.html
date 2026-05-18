@@ -1010,6 +1010,11 @@ prompt(
 if(!meal) return;
 
 food.count -=1;
+  if(food.count <=0){
+
+food.hidden = true;
+
+  }
 food.usedToday = true;
 
 if(food.count <=0){
