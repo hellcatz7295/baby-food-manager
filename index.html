@@ -911,6 +911,10 @@ ${badge}
 
 <div class="food-name">
 ${item.name}
+
+${isNewFood(item.name)
+? '🆕'
+: ''}
 ${item.usedToday ? '(오늘 사용)' : ''}
 </div>
 
