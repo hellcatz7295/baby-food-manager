@@ -1465,6 +1465,57 @@ new Date(item.date)
 return diff <=1;
 
 }
+  function copyYesterdayMeal(){
+
+const yesterday = new Date();
+
+yesterday.setDate(
+yesterday.getDate()-1
+);
+
+const y =
+yesterday
+.toISOString()
+.split('T')[0];
+
+const records =
+appData.todayRecords.filter(
+item=>item.date===y
+);
+
+if(records.length===0){
+
+alert('어제 기록 없음');
+
+return;
+
+}
+
+records.forEach(record=>{
+
+appData.todayRecords.push({
+
+date:new Date()
+.toISOString()
+.split('T')[0],
+
+meal:record.meal,
+
+foods:[...record.foods],
+
+memo:record.memo
+
+});
+
+});
+
+saveData();
+
+renderTodayRecords();
+
+alert('어제 식단 복사 완료');
+
+  }
 </script>
 
 </body>
