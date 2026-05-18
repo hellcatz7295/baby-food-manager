@@ -1567,6 +1567,46 @@ foods.push(food);
 return foods.sort();
 
 }
+  function renderDictionary(){
+
+const list =
+document.getElementById('dictionaryList');
+
+if(!list) return;
+
+const foods =
+getFoodDictionary();
+
+if(foods.length===0){
+
+list.innerHTML =
+`<div class="empty">
+아직 먹어본 재료 없음
+</div>`;
+
+return;
+
+}
+
+list.innerHTML='';
+
+foods.forEach(food=>{
+
+list.innerHTML += `
+
+<div class="stock-item">
+
+<div class="food-name">
+${food}
+</div>
+
+</div>
+
+`;
+
+});
+
+  }
 </script>
 
 </body>
