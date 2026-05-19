@@ -1,0 +1,968 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Food Manager MEGA</title>
+<style>
+body{font-family:sans-serif;background:#F7F4EE;margin:0;color:#333;padding-bottom:100px}
+header{background:#fff;padding:14px;position:sticky;top:0;border-bottom:1px solid #ddd;z-index:99}
+.tabs{display:flex;gap:6px;overflow:auto;margin-top:10px}
+.tab{padding:8px 12px;background:#ECE7DD;border-radius:10px;font-size:13px;white-space:nowrap;cursor:pointer}
+.tab.active{background:#A7BFA1;color:#fff}
+.container{padding:12px}
+.page{display:none}
+.page.active{display:block}
+.card{background:#fff;border:1px solid #E6E0D5;border-radius:14px;padding:14px;margin-bottom:12px}
+input,select,textarea,button{width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-bottom:8px;box-sizing:border-box}
+button{background:#A7BFA1;color:#fff;border:none;font-weight:bold}
+.row{display:flex;gap:6px}
+.row>*{flex:1}
+.stock-item{padding:10px 0;border-top:1px solid #eee}
+.stock-item:first-child{border-top:none}
+.food-name{font-weight:bold;margin-bottom:4px}
+.food-meta{font-size:12px;color:#666;line-height:1.5}
+.old{color:#D75D5D;font-weight:bold}
+.warn{background:#FFF3F0;border-radius:10px;padding:10px}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;color:#fff;margin-bottom:4px}
+.topbar{background:#fff;border:1px solid #E6E0D5;border-radius:12px;padding:10px;margin-bottom:10px}
+.small{font-size:11px;color:#777;margin-bottom:4px}
+.gray{background:#999}
+.red{background:#D75D5D}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#A7BFA1">
+
+</head>
+
+<body>
+
+<header>
+<div style="font-size:22px;font-weight:800">재하의 푸드매니저</div>
+<div id="babyInfo" style="font-size:12px;color:#666;margin-top:4px"></div>
+
+<div class="tabs">
+<div class="tab active" onclick="changeTab('stock',this)">냉동재고</div>
+<div class="tab" onclick="changeTab('today',this)">오늘기록</div>
+<div class="tab" onclick="changeTab('calendar',this)">달력</div>
+<div class="tab" onclick="changeTab('recommend',this)">추천</div>
+<div class="tab" onclick="changeTab('shopping',this)">장보기</div>
+<div class="tab" onclick="changeTab('dictionary',this)">도감</div>
+<div class="tab" onclick="changeTab('stats',this)">통계</div>
+<div class="tab" onclick="changeTab('setting',this)">설정</div>
+</div>
+</header>
+
+<div class="container">
+
+<section class="page active" id="stock">
+
+<div class="topbar">
+<div class="small">오늘 먹음</div>
+<div id="todaySummary">-</div>
+</div>
+
+<div class="topbar">
+<div class="small">곧 떨어질 재고</div>
+<div id="lowSummary">-</div>
+</div>
+
+<div class="topbar">
+<div class="small">오래된 재고</div>
+<div id="oldSummary">-</div>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">재고 추가</div>
+
+<input id="foodName" placeholder="재료명">
+
+<select id="foodCategory">
+<option value="protein">단백질</option>
+<option value="fruitveg">열매채소</option>
+<option value="leafveg">잎채소</option>
+<option value="snack">간식</option>
+<option value="side">반찬</option>
+<option value="soup">국</option>
+<option value="etc">기타</option>
+</select>
+
+<div class="row">
+<input id="foodCount" type="number" placeholder="수량">
+<input id="foodDate" type="date">
+</div>
+
+<textarea id="foodMemo" placeholder="메모 / 반응 / 알레르기"></textarea>
+
+<button onclick="addStock()">재고 추가</button>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">현재 재고</div>
+
+<input id="stockSearch" placeholder="재고 검색" oninput="renderStocks()">
+
+<div id="stockList"></div>
+</div>
+
+</section>
+
+<section class="page" id="today">
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">오늘 기록</div>
+
+<select id="mealType">
+<option>아침</option>
+<option>점심</option>
+<option>저녁</option>
+<option>간식</option>
+</select>
+
+
+<div id="foodChipWrap" style="margin-bottom:10px"></div>
+
+<input id="todayFoods" placeholder="직접 입력도 가능 예: 브로콜리,두부">
+
+
+<textarea id="todayMemo" placeholder="메모"></textarea>
+
+<button onclick="saveMeal()">오늘 기록 저장</button>
+<button class="gray" onclick="copyYesterday()">어제 식단 복사</button>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">오늘 기록 목록</div>
+<div id="todayList"></div>
+</div>
+
+</section>
+
+<section class="page" id="calendar">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">달력 기록</div>
+<div id="calendarList"></div>
+</div>
+</section>
+
+<section class="page" id="recommend">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">추천 메뉴</div>
+<div id="recommendList"></div>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">주의 조합</div>
+
+<button onclick="addBadCombo()">주의조합 추가</button>
+<div id="badComboList"></div>
+</div>
+</section>
+
+<section class="page" id="shopping">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">장보기 추가</div>
+<input id="shoppingInput" placeholder="장볼 재료">
+<button onclick="addShopping()">추가</button>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">장보기 리스트</div>
+<div id="shoppingList"></div>
+</div>
+</section>
+
+<section class="page" id="dictionary">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">먹어본 재료 도감</div>
+<div id="dictionaryList"></div>
+</div>
+</section>
+
+<section class="page" id="stats">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">자주 먹은 음식</div>
+<div id="statsList"></div>
+</div>
+</section>
+
+<section class="page" id="setting">
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">아기 정보</div>
+
+<input id="babyName">
+<div class="row">
+<input id="babyHeight">
+<input id="babyWeight">
+</div>
+<input id="babyBirth" type="date">
+
+<button onclick="saveBaby()">저장</button>
+</div>
+
+<div class="card">
+<div style="font-weight:bold;margin-bottom:10px">백업 / 복원</div>
+
+<button onclick="backupData()">백업 복사</button>
+
+<textarea id="restoreInput" placeholder="백업 데이터 붙여넣기"></textarea>
+
+<button onclick="restoreData()">복원</button>
+
+<button class="red" onclick="resetAll()">전체 초기화</button>
+</div>
+</section>
+
+</div>
+
+<script>
+
+let appData = JSON.parse(localStorage.getItem('bfm_mega')) || {
+
+baby:{
+name:'재하',
+height:'77.8',
+weight:'11.9',
+birth:'2025-05-12'
+},
+
+stocks:[],
+records:[],
+shopping:[],
+
+badCombos:[
+'시금치+두부',
+'감+우유'
+]
+
+};
+
+function saveData(){
+localStorage.setItem('bfm_mega',JSON.stringify(appData));
+}
+
+function changeTab(id,el){
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+el.classList.add('active');
+}
+
+function getBadge(category){
+
+if(category==='protein') return '<span class="badge" style="background:#C98D7B">단백질</span>';
+if(category==='fruitveg') return '<span class="badge" style="background:#D8B066">열매채소</span>';
+if(category==='leafveg') return '<span class="badge" style="background:#8EB486">잎채소</span>';
+if(category==='snack') return '<span class="badge" style="background:#B39AD7">간식</span>';
+if(category==='side') return '<span class="badge" style="background:#D98C8C">반찬</span>';
+if(category==='soup') return '<span class="badge" style="background:#7FA7C9">국</span>';
+
+return '<span class="badge" style="background:#999">기타</span>';
+
+}
+
+function addStock(){
+
+const name=document.getElementById('foodName').value.trim();
+const category=document.getElementById('foodCategory').value;
+const count=Number(document.getElementById('foodCount').value);
+const date=document.getElementById('foodDate').value;
+const memo=document.getElementById('foodMemo').value;
+
+if(!name){alert('재료명 입력!');return;}
+if(!count||count<1){alert('수량 입력!');return;}
+
+appData.stocks.push({
+id:Date.now(),
+name,
+category,
+count,
+date,
+memo
+});
+
+saveData();
+
+renderAll();
+
+document.getElementById('foodName').value='';
+document.getElementById('foodCount').value='';
+document.getElementById('foodMemo').value='';
+
+}
+
+
+function renderFoodChips(){
+
+const wrap=document.getElementById('foodChipWrap');
+
+if(!wrap) return;
+
+wrap.innerHTML='';
+
+const visibleStocks=appData.stocks.filter(x=>x.count>0);
+
+visibleStocks.forEach(item=>{
+
+wrap.innerHTML += `
+<span class="badge"
+style="
+background:#ECE7DD;
+color:#333;
+margin:3px;
+cursor:pointer;
+"
+onclick="selectFoodChip('${item.name}')">
+${item.name}
+</span>
+`;
+
+});
+
+}
+
+function selectFoodChip(name){
+
+const input=document.getElementById('todayFoods');
+
+const current=input.value
+.split(',')
+.map(x=>x.trim())
+.filter(Boolean);
+
+if(!current.includes(name)){
+current.push(name);
+}
+
+input.value=current.join(',');
+
+}
+
+
+
+function deleteMeal(index){
+
+const today=new Date().toISOString().split('T')[0];
+
+const records=appData.records.filter(x=>x.date===today);
+
+const target=records.reverse()[index];
+
+if(!target) return;
+
+target.foods.forEach(food=>{
+
+const stock=appData.stocks.find(x=>x.name===food);
+
+if(stock){
+stock.count +=1;
+}
+
+});
+
+const realIndex=appData.records.indexOf(target);
+
+if(realIndex>-1){
+appData.records.splice(realIndex,1);
+}
+
+saveData();
+renderAll();
+
+}
+
+function editStock(id){
+
+const stock=appData.stocks.find(x=>x.id===id);
+
+if(!stock) return;
+
+const newName=prompt('재료명',stock.name);
+if(newName!==null) stock.name=newName;
+
+const newCount=prompt('수량',stock.count);
+if(newCount!==null) stock.count=Number(newCount);
+
+const newMemo=prompt('메모',stock.memo||'');
+if(newMemo!==null) stock.memo=newMemo;
+
+saveData();
+renderAll();
+
+}
+
+function removeShopping(index){
+
+appData.shopping.splice(index,1);
+
+saveData();
+renderShopping();
+
+}
+
+function addBadCombo(){
+
+const combo=prompt('주의조합 입력 예: 시금치+두부');
+
+if(!combo) return;
+
+appData.badCombos.push(combo);
+
+saveData();
+renderRecommend();
+
+}
+
+
+function renderStocks(){
+
+const keyword=(document.getElementById('stockSearch')?.value||'').toLowerCase();
+
+const list=document.getElementById('stockList');
+
+let stocks=appData.stocks
+.filter(x=>x.count>0)
+.filter(x=>x.name.toLowerCase().includes(keyword));
+
+stocks.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+if(stocks.length===0){
+list.innerHTML='재고 없음';
+return;
+}
+
+list.innerHTML='';
+
+stocks.forEach(item=>{
+
+const diff=Math.floor((new Date()-new Date(item.date))/(1000*60*60*24));
+
+list.innerHTML += `
+<div class="stock-item">
+
+${getBadge(item.category)}
+
+<div class="food-name">${item.name}</div>
+
+<div class="food-meta">
+
+${item.count<=2
+? `<span class="old">부족 ${item.count}개</span>`
+: `${item.count}개`
+}
+
+·
+
+${diff>=14
+? `<span class="old">⚠ 냉동 ${diff}일째</span>`
+: `냉동 ${diff}일째`
+}
+
+</div>
+
+<div class="food-meta">${item.memo||''}</div>
+
+<div class="row" style="margin-top:8px;">
+<button onclick="changeCount(${item.id},1)">+1</button>
+<button class="gray" onclick="changeCount(${item.id},-1)">-1</button>
+<button onclick="editStock(${item.id})">수정</button>
+<button class="red" onclick="deleteStock(${item.id})">삭제</button>
+
+
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+function deleteStock(id){
+
+appData.stocks=appData.stocks.filter(x=>x.id!==id);
+
+saveData();
+renderAll();
+
+}
+
+function changeCount(id,num){
+
+const stock=appData.stocks.find(x=>x.id===id);
+
+if(!stock) return;
+
+stock.count += num;
+
+if(stock.count<0){
+stock.count=0;
+}
+
+saveData();
+renderAll();
+
+}
+
+function saveMeal(){
+
+const meal=document.getElementById('mealType').value;
+
+const foods=document.getElementById('todayFoods')
+.value
+.split(',')
+.map(x=>x.trim())
+.filter(Boolean);
+
+const memo=document.getElementById('todayMemo').value;
+
+if(foods.length===0){
+alert('음식 입력!');
+return;
+}
+
+appData.records.push({
+date:new Date().toISOString().split('T')[0],
+meal,
+foods,
+memo
+});
+
+foods.forEach(food=>{
+
+const normalized=food.trim().toLowerCase();
+
+const stock=appData.stocks.find(
+x=>x.name.trim().toLowerCase()===normalized
+);
+
+if(stock&&stock.count>0){
+stock.count-=1;
+}
+
+});
+
+saveData();
+
+renderAll();
+
+document.getElementById('todayFoods').value='';
+document.getElementById('todayMemo').value='';
+
+}
+
+function copyYesterday(){
+
+const yesterday=new Date();
+yesterday.setDate(yesterday.getDate()-1);
+
+const y=yesterday.toISOString().split('T')[0];
+
+const records=appData.records.filter(x=>x.date===y);
+
+records.forEach(record=>{
+
+appData.records.push({
+date:new Date().toISOString().split('T')[0],
+meal:record.meal,
+foods:[...record.foods],
+memo:record.memo
+});
+
+});
+
+saveData();
+renderAll();
+
+}
+
+function isBadCombo(foods){
+
+const normalized=foods.map(x=>x.replaceAll(' ',''));
+
+for(const combo of appData.badCombos){
+
+const parts=combo.split('+').map(x=>x.replaceAll(' ',''));
+
+const matched=parts.every(p=>normalized.some(f=>f.includes(p)));
+
+if(matched) return true;
+
+}
+
+return false;
+
+}
+
+function renderToday(){
+
+const today=new Date().toISOString().split('T')[0];
+
+const records=appData.records.filter(x=>x.date===today);
+
+const list=document.getElementById('todayList');
+
+if(records.length===0){
+list.innerHTML='오늘 기록 없음';
+return;
+}
+
+list.innerHTML='';
+
+records.slice().reverse().forEach((item,index)=>{
+
+const warning=isBadCombo(item.foods);
+
+list.innerHTML += `
+<div class="${warning ? 'warn' : ''}">
+<div class="food-name" style="${warning ? 'color:#D75D5D;' : ''}">
+${warning ? '⚠ ' : ''}${item.meal}
+</div>
+<div class="food-meta">${item.foods.join(' · ')}</div>
+<div class="food-meta">${item.memo||''}</div>
+</div>
+`;
+
+});
+
+}
+
+function renderCalendar(){
+
+const list=document.getElementById('calendarList');
+
+if(appData.records.length===0){
+list.innerHTML='기록 없음';
+return;
+}
+
+list.innerHTML='';
+
+appData.records.slice().reverse().forEach((item,index)=>{
+
+list.innerHTML += `
+<div class="stock-item">
+<div class="food-meta">${item.date}</div>
+<div class="food-name">${item.meal}</div>
+<div class="food-meta">${item.foods.join(' · ')}</div>
+</div>
+`;
+
+});
+
+}
+
+function renderRecommend(){
+
+const list=document.getElementById('recommendList');
+
+const recent=appData.records.slice(-5).flatMap(x=>x.foods);
+
+const candidates=appData.stocks
+.filter(x=>x.count>0)
+.filter(x=>!recent.includes(x.name))
+.slice(0,8);
+
+if(candidates.length===0){
+list.innerHTML='추천 없음';
+return;
+}
+
+list.innerHTML='';
+
+candidates.forEach(item=>{
+
+list.innerHTML += `
+<div class="stock-item">
+<div class="food-name">${item.name}</div>
+<div class="food-meta">최근 먹은 음식 제외 추천</div>
+</div>
+`;
+
+});
+
+const bad=document.getElementById('badComboList');
+
+bad.innerHTML='';
+
+appData.badCombos.forEach(item=>{
+
+bad.innerHTML += `
+<div class="stock-item">
+<div class="food-meta">⚠ ${item}</div>
+</div>
+`;
+
+});
+
+}
+
+function addShopping(){
+
+const value=document.getElementById('shoppingInput').value;
+
+if(!value) return;
+
+appData.shopping.push({
+name:value,
+checked:false
+});
+
+saveData();
+renderShopping();
+
+document.getElementById('shoppingInput').value='';
+
+}
+
+function toggleShopping(index){
+
+appData.shopping[index].checked=!appData.shopping[index].checked;
+
+saveData();
+renderShopping();
+
+}
+
+function renderShopping(){
+
+const list=document.getElementById('shoppingList');
+
+if(appData.shopping.length===0){
+list.innerHTML='장보기 없음';
+return;
+}
+
+list.innerHTML='';
+
+appData.shopping.forEach((item,index)=>{
+
+list.innerHTML += `
+<div class="stock-item">
+<div class="row">
+
+<button class="${item.checked ? 'gray' : ''}"
+onclick="toggleShopping(${index})">
+${item.checked ? '✓' : '○'}
+</button>
+
+<div style="flex:4;padding-top:10px;opacity:${item.checked ? '.4' : '1'};">
+${item.name}
+</div>
+
+</div>
+</div>
+`;
+
+});
+
+}
+
+function renderDictionary(){
+
+const list=document.getElementById('dictionaryList');
+
+const foods=[...new Set(
+appData.records.flatMap(x=>x.foods)
+)];
+
+if(foods.length===0){
+list.innerHTML='아직 먹은 재료 없음';
+return;
+}
+
+list.innerHTML='';
+
+foods.sort().forEach(food=>{
+
+list.innerHTML += `
+<div class="stock-item">
+<div class="food-name">${food}</div>
+</div>
+`;
+
+});
+
+}
+
+function renderStats(){
+
+const list=document.getElementById('statsList');
+
+const countMap={};
+
+appData.records.forEach(record=>{
+record.foods.forEach(food=>{
+countMap[food]=(countMap[food]||0)+1;
+});
+});
+
+const sorted=Object.entries(countMap)
+.sort((a,b)=>b[1]-a[1]);
+
+if(sorted.length===0){
+list.innerHTML='기록 없음';
+return;
+}
+
+list.innerHTML='';
+
+sorted.forEach(item=>{
+
+list.innerHTML += `
+<div class="stock-item">
+<div class="food-name">${item[0]}</div>
+<div class="food-meta">${item[1]}회</div>
+</div>
+`;
+
+});
+
+}
+
+function renderSummary(){
+
+const today=new Date().toISOString().split('T')[0];
+
+const foods=appData.records
+.filter(x=>x.date===today)
+.flatMap(x=>x.foods);
+
+document.getElementById('todaySummary').innerText=
+foods.length
+? [...new Set(foods)].join(', ')
+: '-';
+
+const low=appData.stocks
+.filter(x=>x.count>0&&x.count<=2)
+.map(x=>`${x.name}(${x.count})`);
+
+document.getElementById('lowSummary').innerText=
+low.length
+? low.join(', ')
+: '-';
+
+const old=appData.stocks
+.filter(x=>{
+const diff=Math.floor((new Date()-new Date(x.date))/(1000*60*60*24));
+return diff>=14;
+})
+.map(x=>x.name);
+
+document.getElementById('oldSummary').innerText=
+old.length
+? old.join(', ')
+: '-';
+
+}
+
+function backupData(){
+
+navigator.clipboard.writeText(JSON.stringify(appData));
+
+alert('백업 복사 완료');
+
+}
+
+function restoreData(){
+
+const value=document.getElementById('restoreInput').value;
+
+if(!value) return;
+
+appData=JSON.parse(value);
+
+saveData();
+
+renderAll();
+
+alert('복원 완료');
+
+}
+
+
+function resetAll(){
+
+const ok = confirm('정말 전체 데이터를 초기화할까?');
+
+if(!ok) return;
+
+localStorage.removeItem('bfm_mega');
+
+location.reload();
+
+}
+
+
+function saveBaby(){
+
+appData.baby.name=document.getElementById('babyName').value;
+appData.baby.height=document.getElementById('babyHeight').value;
+appData.baby.weight=document.getElementById('babyWeight').value;
+appData.baby.birth=document.getElementById('babyBirth').value;
+
+saveData();
+
+renderAll();
+
+}
+
+function renderAll(){
+
+document.getElementById('babyInfo').innerText=
+`D+${Math.floor((new Date()-new Date(appData.baby.birth))/(1000*60*60*24))} · ${appData.baby.height}cm · ${appData.baby.weight}kg`;
+
+document.getElementById('babyName').value=appData.baby.name;
+document.getElementById('babyHeight').value=appData.baby.height;
+document.getElementById('babyWeight').value=appData.baby.weight;
+document.getElementById('babyBirth').value=appData.baby.birth;
+
+document.getElementById('foodDate').value=
+new Date().toISOString().split('T')[0];
+
+renderStocks();
+renderFoodChips();
+renderToday();
+renderCalendar();
+renderRecommend();
+renderShopping();
+renderDictionary();
+renderStats();
+renderSummary();
+
+}
+
+window.changeTab=changeTab;
+window.addStock=addStock;
+window.changeCount=changeCount;
+window.deleteStock=deleteStock;
+window.saveMeal=saveMeal;
+window.copyYesterday=copyYesterday;
+window.addShopping=addShopping;
+window.toggleShopping=toggleShopping;
+window.saveBaby=saveBaby;
+window.backupData=backupData;
+window.restoreData=restoreData;
+
+window.deleteMeal=deleteMeal;
+window.editStock=editStock;
+window.removeShopping=removeShopping;
+window.addBadCombo=addBadCombo;
+
+window.resetAll=resetAll;
+
+renderAll();
+
+
+if ('serviceWorker' in navigator) {
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('./service-worker.js');
+});
+}
+
+</script>
+
+</body>
+</html>
